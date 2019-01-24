@@ -2,7 +2,7 @@
 	"compilerOptions": {
 		"module": "esnext",
 		"target": "esnext",
-		"outDir": "/",
+		"outDir": ".",
 		"moduleResolution": "node",
 		"declaration": true,
 		"lib": [
