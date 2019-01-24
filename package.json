@@ -1,11 +1,13 @@
 {
   "name": "@thalesrc/hermes",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "Javascript messaging library",
   "main": "index.js",
+  "typings": "index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",
-    "build": "tsc"
+    "publish:configure-npm": "replace '<EMAIL>' $NPM_EMAIL .npmrc && replace '<TOKEN>' $NPM_TOKEN .npmrc",
+    "prepublishOnly": "gtvu $TRAVIS_TAG && npm run publish:configure-npm && tsc"
   },
   "repository": {
     "type": "git",
@@ -33,6 +35,11 @@
     "rxjs": "^6.3.3"
   },
   "devDependencies": {
+    "@gen-tech/version-update": "^0.1.2",
+    "replace": "^1.0.1",
     "utility-types": "^3.4.1"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
