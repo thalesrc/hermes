@@ -19,6 +19,6 @@ deploy:
   #     branch: master
   - provider: script
     skip-cleanup: true
-    script: npm publish
+    script: npm run npm:publish
     on:
       tags: true

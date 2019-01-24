@@ -6,8 +6,11 @@
   "typings": "index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",
-    "publish:configure-npm": "replace '<EMAIL>' $NPM_EMAIL .npmrc && replace '<TOKEN>' $NPM_TOKEN .npmrc",
-    "prepublishOnly": "gtvu $TRAVIS_TAG && npm run publish:configure-npm && tsc"
+    "npm:publish:configure": "replace '<EMAIL>' $NPM_EMAIL .npmrc && replace '<TOKEN>' $NPM_TOKEN .npmrc",
+    "npm:publish:copy": "cpy 'LICENSE' 'README.md' '.npmrc' '.npmignore' 'package.json' dist",
+    "npm:publish:pack": "cd dist && npm pack",
+    "npm:publish:post": "npm publish ./dist/thalesrc-hermes-$TRAVIS_TAG.tgz",
+    "npm:publish": "gtvu $TRAVIS_TAG && npm run npm:publish:configure && npm run npm:publish:copy && tsc && npm run npm:publish:pack && npm run npm:publish:post"
   },
   "repository": {
     "type": "git",
@@ -36,6 +39,7 @@
   },
   "devDependencies": {
     "@gen-tech/version-update": "^0.1.2",
+    "cpy-cli": "^2.0.0",
     "replace": "^1.0.1",
     "typescript": "^3.2.4",
     "utility-types": "^3.4.1"
