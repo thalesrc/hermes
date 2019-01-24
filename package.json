@@ -1,0 +1,40 @@
+{
+  "name": "@thalesrc/hermes",
+  "version": "0.0.1",
+  "description": "Javascript messaging library",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "build": "del dist/ && tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thalesrc/hermes.git"
+  },
+  "keywords": [
+    "javascript",
+    "messaging",
+    "send",
+    "message",
+    "chrome",
+    "extensions",
+    "nodejs",
+    "child",
+    "process",
+    "webworkers"
+  ],
+  "author": "alisahinozcelik@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/thalesrc/hermes/issues"
+  },
+  "homepage": "https://github.com/thalesrc/hermes#readme",
+  "dependencies": {
+    "rxjs": "^6.3.3"
+  },
+  "devDependencies": {
+    "del-cli": "^1.1.0",
+    "move-cli": "^1.2.0",
+    "utility-types": "^3.4.1"
+  }
+}
