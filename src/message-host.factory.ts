@@ -1,22 +1,21 @@
-import { Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
 import { MESSAGE_LISTENERS } from './selectors';
 import { ListenerStorage } from './listener-storage.type';
-import { Message } from './message.interface';
+import { HostingService } from './hosting-service.interface';
 
 /**
  * Constructs a decorator to obtain functionality of message hosting to a class
- * @param supplier A `GatewayMessage` observable to supply created class decorator
+ * @param service A `HostingService` instance to manage messaging
  *
  * ### Example
  * ```
- * import { messages$ } from './somewhere';
+ * import { hostingService } from './somewhere';
  *
- * const MessageHost = messageHostFactory(messages$);
+ * const MessageHost = messageHostFactory(hostingService);
  *
- * @MessageHost('domain-name')
- * class MailsHost {
+ * @MessageHost()
+ * class PersonHost {
  *   @Listener('what-is-your-name')
  *   public *answerName() {
  *     yield 'hermes';
@@ -24,34 +23,31 @@ import { Message } from './message.interface';
  * }
  * ```
  */
-export function messageHostFactory(supplier: Observable<Message>): (domain: string) => ClassDecorator {
-  return function MessageHost(domain: string) {
-    return function(Constructor: any) {
-
+export function messageHostFactory(service: HostingService): () => ClassDecorator {
+  return function() {
+    return function(Constructor) {
       if (!Constructor[MESSAGE_LISTENERS]) {
         Constructor[MESSAGE_LISTENERS] = new Map<string, Function>();
       }
-
-      const events = supplier.pipe(filter(({domain: _domain}) => domain === _domain));
 
       return class extends Constructor {
         constructor() {
           super(...arguments);
 
           for (const [path, method] of <ListenerStorage>Constructor[MESSAGE_LISTENERS]) {
-            events
-              .pipe(filter(({message: {path: _path}}) => path === _path))
-              .subscribe(async ({ message: {body, id}, responseMethod }) => {
+            service.requests$
+              .pipe(filter(({path: _path}) => path === _path))
+              .subscribe(async ({body, id}) => {
 
                 for await (const result of method(body)) {
-                  responseMethod({completed: false, id, body: result});
+                  service.response({completed: false, id, body: result});
                 }
 
-                responseMethod({completed: true, id });
+                service.response({completed: true, id });
               });
           }
         }
-      } as any;
-    };
-  };
+      }
+    } as any;
+  }
 }
