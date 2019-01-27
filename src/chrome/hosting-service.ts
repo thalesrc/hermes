@@ -21,7 +21,7 @@ export class ChromeHostingService implements HostingService {
 			}
 
 			port.onMessage.addListener((message: Message, port: chrome.runtime.Port) => {
-				this._ports[port.sender.tlsChannelId] = port;
+				this._ports[port.sender.tab.id] = port;
 				message.id = `${message.id}&portIdentifier=${port.sender.tab.id}`;
 
 				this._requests$.next(message);
