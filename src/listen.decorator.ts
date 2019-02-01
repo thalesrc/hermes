@@ -6,12 +6,12 @@ import { ListenerStorage } from './listener-storage.type';
  *
  * @param path Acts like an api endpoint path of an XHR for extensions messaging
  */
-export function Listener(path: string): MethodDecorator {
-  return function(target, key, descriptor: TypedPropertyDescriptor<any>) {
+export function Listen(path?: string): MethodDecorator {
+  return function(target, key: string, descriptor: TypedPropertyDescriptor<any>) {
     if (!target.constructor[MESSAGE_LISTENERS]) {
-      target.constructor[MESSAGE_LISTENERS] = new Map<string, ListenerStorage>();
+      target.constructor[MESSAGE_LISTENERS] = new Map();
     }
 
-    (<ListenerStorage>target.constructor[MESSAGE_LISTENERS]).set(path, (<Function>descriptor.value).bind(target));
+    (<ListenerStorage>target.constructor[MESSAGE_LISTENERS]).set(path || key, <any>descriptor.value);
   };
 }
