@@ -5,6 +5,7 @@
 		"outDir": "dist",
 		"moduleResolution": "node",
 		"declaration": true,
+		"experimentalDecorators": true,
 		"lib": [
 			"esnext",
 			"esnext.asynciterable",
@@ -18,6 +19,7 @@
 		"src/"
 	],
 	"exclude": [
-		"node_modules/"
+		"node_modules/",
+		"**/*.spec.ts"
 	]
 }
