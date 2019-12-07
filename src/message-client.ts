@@ -2,13 +2,26 @@ import { Observable } from "rxjs";
 
 import { Message } from "./message.interface";
 import { MessageResponse } from "./message-response.type";
+import { RESPONSES$, SEND, GET_NEW_ID } from "./selectors";
 
+/**
+ * Message Client
+ */
 export abstract class MessageClient {
-	protected abstract responses$: Observable<MessageResponse>;
+	/**
+	 * Emits all messages got from hosts
+	 */
+	protected abstract readonly [RESPONSES$]: Observable<MessageResponse>;
 
-	// TODO: use Omit<Message, 'id'> type to start refactoring of making message client responsible for defining message id
-	protected abstract send(message: Message): void;
+	/**
+	 * Request decorators use this method to send messages
+	 *
+	 * @param message Message payload to send
+	 */
+	protected abstract [SEND](message: Message): void;
 
-	// TODO: make extended classes responsible to create message id
-	// protected abstract getNewMessageId(): string {}
+	/**
+	 * Request decorators use this method to get unique message id all accross the platform
+	 */
+	protected abstract [GET_NEW_ID](): string;
 }
