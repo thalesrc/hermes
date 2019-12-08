@@ -42,8 +42,7 @@
     "replace": "^1.0.1",
     "rxjs-marbles": "^5.0.3",
     "ts-jest": "^24.2.0",
-    "typescript": "^3.2.4",
-    "utility-types": "^3.4.1"
+    "typescript": "^3.2.4"
   },
   "publishConfig": {
     "access": "public"
