@@ -1,7 +1,7 @@
-import { filter, takeWhile, pluck } from "rxjs/operators";
+import { filter, pluck, takeWhile } from 'rxjs/operators';
 
-import { MessageClient } from "./message-client";
-import { RESPONSES$, GET_NEW_ID, SEND } from "./selectors";
+import { MessageClient } from './message-client';
+import { GET_NEW_ID, RESPONSES$, SEND } from './selectors';
 
 export function Request(path: string): MethodDecorator {
   return function(target: object, key: string, descriptor: TypedPropertyDescriptor<any>): TypedPropertyDescriptor<any> {
@@ -13,10 +13,10 @@ export function Request(path: string): MethodDecorator {
       return this[RESPONSES$].pipe(
         filter(({id}) => id === messageId),
         takeWhile(({completed}) => !completed),
-        pluck('body')
+        pluck('body'),
       );
     };
 
     return descriptor;
-  }
+  };
 }

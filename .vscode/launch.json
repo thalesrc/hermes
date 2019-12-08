@@ -23,7 +23,7 @@
           "--runInBand"      
         ],
       },
-      "console": "integratedTerminal",
+      "console": "internalConsole",
       "internalConsoleOptions": "neverOpen"
     },
 	]

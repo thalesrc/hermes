@@ -1,9 +1,9 @@
-import { empty, Observable } from "rxjs";
-import { marbles } from "rxjs-marbles/jest";
+import { empty, Observable } from 'rxjs';
+import { marbles } from 'rxjs-marbles/jest';
 
-import { Request } from "./request.decorator";
-import { Message } from "./message.interface";
-import { SEND, GET_NEW_ID, RESPONSES$ } from "./selectors";
+import { Message } from './message.interface';
+import { Request } from './request.decorator';
+import { GET_NEW_ID, RESPONSES$, SEND } from './selectors';
 
 describe('Request Decorator', () => {
   class Foo {
@@ -12,7 +12,7 @@ describe('Request Decorator', () => {
       return null;
     }
   }
-  
+
   it('should initialize properly', () => {
     expect(Foo.prototype.baz).toBeTruthy();
   });
@@ -32,14 +32,14 @@ describe('Request Decorator', () => {
     expect(res).toBeInstanceOf(Observable);
   });
 
-  it('should return only body of the message', marbles(m => {
+  it('should return only body of the message', marbles((m) => {
     const instance = new Foo();
-  
+
     instance[GET_NEW_ID] = jest.fn().mockReturnValue('1');
     instance[SEND] = jest.fn();
     instance[RESPONSES$] = m.cold('a-b|', {
       a: {body: 'heyy', id: '1', completed: false},
-      b: {id: '1', completed: true}
+      b: {id: '1', completed: true},
     });
 
     const res = instance.baz('test message');
@@ -47,7 +47,7 @@ describe('Request Decorator', () => {
     m.expect(res).toBeObservable('a-|', {a: 'heyy'});
   }));
 
-  it('should listen until complete message received', marbles(m => {
+  it('should listen until complete message received', marbles((m) => {
     const instance = new Foo();
 
     instance[GET_NEW_ID] = jest.fn().mockReturnValue('1');
@@ -56,7 +56,7 @@ describe('Request Decorator', () => {
       a: {body: 'heyy', id: '1', completed: false},
       b: {body: 'hermes', id: '1', completed: false},
       c: {body: 'rocks', id: '1', completed: false},
-      d: {id: '1', completed: true}
+      d: {id: '1', completed: true},
     });
 
     const res = instance.baz('test message');
@@ -64,9 +64,9 @@ describe('Request Decorator', () => {
     const expected = m.cold('-a-b-c-|', {
       a: 'heyy',
       b: 'hermes',
-      c: 'rocks'
+      c: 'rocks',
     });
 
     m.expect(res).toBeObservable(expected);
-  }))
+  }));
 });

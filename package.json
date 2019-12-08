@@ -6,7 +6,8 @@
   "typings": "index.d.ts",
   "scripts": {
     "test": "jest",
-    "npm:publish": "npm version $PACKAGE_VERSION --no-git-tag-version && tsc && npm publish"
+    "lint": "tslint -p tsconfig.json && tslint -p tsconfig.spec.json",
+    "prepublishOnly": "npm version $PACKAGE_VERSION --no-git-tag-version && tsc"
   },
   "repository": {
     "type": "git",

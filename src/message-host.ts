@@ -1,62 +1,63 @@
-import { Observable } from "rxjs";
-import { filter } from "rxjs/operators";
-import { mapMerge } from "@thalesrc/js-utils/map-merge";
+import { mapMerge } from '@thalesrc/js-utils/map-merge';
+import { Observable } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
-import { Message } from "./message.interface";
-import { MessageResponse } from "./message-response.type";
-import { MESSAGE_LISTENERS } from "./selectors";
-import { ListenerStorage } from "./listener-storage.type";
+import { ListenerStorage } from './listener-storage.type';
+import { MessageResponse } from './message-response.type';
+import { Message } from './message.interface';
+import { MESSAGE_LISTENERS } from './selectors';
 
 /**
  * Listeners property symbol
  */
-const LISTENERS: unique symbol = Symbol('Message Host Listeners');
+export const GET_LISTENERS: unique symbol = Symbol('Message Host Listeners');
 
 /**
  * Message Host
  */
 export abstract class MessageHost {
 
-	/**
-	 * Run this method to start listening the requests
-	 */
-	protected readonly listen = (messages$: Observable<Message>): void => {
-		for (const [path, listener] of this[LISTENERS]) {
-			messages$
-				.pipe(filter(({path: _path}) => path === _path))
-				.subscribe(async ({body, id}) => {
+  /**
+   * Run this method to start listening the requests
+   */
+  protected readonly listen = (messages$: Observable<Message>): void => {
+    for (const [path, listener] of this[GET_LISTENERS]()) {
+      messages$
+        .pipe(filter(({path: messagePath}) => path === messagePath))
+        .subscribe(async ({body, id}) => {
 
-					for await (const result of listener.call(this, body)) {
-						this.response({completed: false, id, body: result});
-					}
+          for await (const result of listener.call(this, body)) {
+            this.response({completed: false, id, body: result});
+          }
 
-					this.response({completed: true, id });
-				});
-		}
-	}
+          this.response({completed: true, id });
+        });
+    }
+  }
 
-	/**
-	 * All inherited listeners
-	 */
-	private get [LISTENERS](): ListenerStorage {
-		let map: ListenerStorage = new Map();
+  /**
+   * Build a reponse method to send the responses to the requests by using the communication methods of the platform
+   *
+   * @param message Incoming response message
+   */
+  protected abstract response(message: MessageResponse): void;
 
-		let currentProto = this['__proto__'];
+  /**
+   * All inherited listeners
+   */
+  private [GET_LISTENERS](): ListenerStorage {
+    let map: ListenerStorage = new Map();
 
-		while (currentProto.constructor !== Object) {
-			if (currentProto.constructor[MESSAGE_LISTENERS]) {
-				map = mapMerge(map, <ListenerStorage>currentProto.constructor[MESSAGE_LISTENERS]);
-			}
+    let currentProto = this['__proto__' + ''];
 
-			currentProto = currentProto['__proto__'];
-		}
+    while (currentProto.constructor !== Object) {
+      if (currentProto.constructor[MESSAGE_LISTENERS]) {
+        map = mapMerge(map, currentProto.constructor[MESSAGE_LISTENERS] as ListenerStorage);
+      }
 
-		return map;
-	}
+      currentProto = currentProto.__proto__;
+    }
 
-	/**
-	 * Build a reponse method to send responses to requests by the way of the platform
-	 * @param message Incoming response message
-	 */
-	protected abstract response(message: MessageResponse): void;
+    return map;
+  }
 }

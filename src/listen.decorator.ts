@@ -1,5 +1,5 @@
-import { MESSAGE_LISTENERS } from './selectors';
 import { ListenerStorage } from './listener-storage.type';
+import { MESSAGE_LISTENERS } from './selectors';
 
 /**
  * Decorate a generator method to listen messages of a domain and reply them by using `yield`
@@ -12,6 +12,6 @@ export function Listen(path?: string): MethodDecorator {
       target.constructor[MESSAGE_LISTENERS] = new Map();
     }
 
-    (<ListenerStorage>target.constructor[MESSAGE_LISTENERS]).set(path || key, <any>descriptor.value);
+    (target.constructor[MESSAGE_LISTENERS] as ListenerStorage).set(path || key, descriptor.value as any);
   };
 }
