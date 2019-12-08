@@ -1,5 +1,7 @@
 src/
 node_modules/
+.github/
+.vscode/
 
 .gitignore
 .travis.yml
