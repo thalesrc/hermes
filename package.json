@@ -7,11 +7,12 @@
   "scripts": {
     "__test": "echo \"Error: no test specified\" && exit 0",
     "test": "jest",
-    "npm:publish:configure": "replace '<EMAIL>' $NPM_EMAIL .npmrc && replace '<TOKEN>' $NPM_TOKEN .npmrc",
-    "npm:publish:copy": "cpy 'LICENSE' 'README.md' '.npmrc' '.npmignore' 'package.json' dist",
+    "__npm:publish:configure": "replace '<EMAIL>' $NPM_EMAIL .npmrc && replace '<TOKEN>' $NPM_TOKEN .npmrc",
+    "__npm:publish:copy": "cpy 'LICENSE' 'README.md' '.npmrc' '.npmignore' 'package.json' dist",
+    "npm:publish:copy": "cpy 'LICENSE' 'README.md' '.npmignore' 'package.json' dist",
     "npm:publish:pack": "cd dist && npm pack",
-    "npm:publish:post": "npm publish ./dist/thalesrc-hermes-$TRAVIS_TAG.tgz",
-    "npm:publish": "gtvu $TRAVIS_TAG && npm run npm:publish:configure && npm run npm:publish:copy && tsc && npm run npm:publish:pack && npm run npm:publish:post"
+    "npm:publish:post": "npm publish ./dist/thalesrc-hermes-$PACKAGE_VERSION.tgz",
+    "npm:publish": "npm version $PACKAGE_VERSION && npm run npm:publish:copy && tsc && npm run npm:publish:pack && npm run npm:publish:post"
   },
   "repository": {
     "type": "git",
