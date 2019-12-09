@@ -1,6 +1,5 @@
 // tslint:disable:no-empty
 
-
 import { Listen } from './listen.decorator';
 
 describe('Listen Decorator', () => {
