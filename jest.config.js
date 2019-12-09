@@ -5,7 +5,8 @@ module.exports = {
   coverageDirectory: "coverage",
   coverageReporters: ["html", "json"],
   collectCoverageFrom: [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "!**/*/index.ts"
   ],
   testMatch: [
     "**/__tests__/**/*.+(ts|tsx|js)",
