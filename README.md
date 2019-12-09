@@ -1,5 +1,5 @@
 # hermes
-![publish build](https://github.com/thalesrc/hermes/workflows/Node.js%20Package/badge.svg)
+![publish build](https://github.com/thalesrc/hermes/workflows/Npm%20Package/badge.svg)
 [![npm](https://img.shields.io/npm/v/@thalesrc/hermes.svg)](https://www.npmjs.com/package/@thalesrc/hermes)
 [![npm](https://img.shields.io/npm/dw/@thalesrc/hermes.svg)](https://www.npmjs.com/package/@thalesrc/hermes)
 [![codecov](https://codecov.io/gh/thalesrc/hermes/branch/master/graph/badge.svg)](https://codecov.io/gh/thalesrc/hermes)
