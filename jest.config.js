@@ -3,7 +3,7 @@ module.exports = {
     "<rootDir>/src"
   ],
   coverageDirectory: "coverage",
-  coverageReporters: ["html", "json"],
+  coverageReporters: ["html", "lcov"],
   collectCoverageFrom: [
     "src/**/*.ts",
     "!**/*/index.ts"
