@@ -1,25 +1,11 @@
 {
-	"compilerOptions": {
-		"module": "esnext",
-		"target": "esnext",
-		"outDir": "dist",
-		"moduleResolution": "node",
-		"declaration": true,
-		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true,
-		"lib": [
-			"esnext",
-			"esnext.asynciterable",
-			"dom"
-		],
-		"typeRoots": [
-			"node_modules/@types"
-		]
-	},
-	"include": [
-		"src/**/*.spec.ts"
-	],
-	"exclude": [
-		"node_modules/"
-	]
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": [
+      "@types/jest"
+    ]
+  },
+  "include": [
+    "src/**/*.spec.ts"
+  ]
 }
