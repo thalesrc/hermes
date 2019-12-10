@@ -7,7 +7,8 @@
     "rules": {
       "quotemark": [true, "single"],
       "interface-name": [true, "never-prefix"],
-      "only-arrow-functions": false
+      "only-arrow-functions": false,
+      "arrow-parens": false
     },
     "rulesDirectory": []
 }
