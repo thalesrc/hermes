@@ -1,3 +1,5 @@
+import 'jest';
+
 import { empty, Observable } from 'rxjs';
 import { marbles } from 'rxjs-marbles/jest';
 

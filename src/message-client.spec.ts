@@ -1,3 +1,5 @@
+import 'jest';
+
 import { empty } from 'rxjs';
 
 import { MessageClient } from './message-client';

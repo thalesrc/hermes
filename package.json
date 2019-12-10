@@ -8,7 +8,7 @@
     "test": "jest",
     "test:coverage": "jest --collectCoverage",
     "lint": "tslint -p tsconfig.json && tslint -p tsconfig.spec.json",
-    "prepublishOnly": "npm version $PACKAGE_VERSION --no-git-tag-version && tsc"
+    "prepublishOnly": "npm version $PACKAGE_VERSION --no-git-tag-version && tsc ./tsconfig.lib.json"
   },
   "repository": {
     "type": "git",

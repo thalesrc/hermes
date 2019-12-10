@@ -1,4 +1,6 @@
 // tslint:disable:max-classes-per-file no-empty ban-types
+import 'jest';
+
 import { Context, marbles } from 'rxjs-marbles/jest';
 
 import { GET_LISTENERS, MessageHost } from './message-host';
