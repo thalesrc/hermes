@@ -22,18 +22,15 @@ export class UniqueMessageIdHelper {
   }
 
   public getId(): string {
-    let id: number;
-    let lap = this.lap;
-
     if (this.lastId >= Number.MAX_SAFE_INTEGER) {
-      id = Number.MIN_SAFE_INTEGER;
-      lap = this.lap++;
+      this.lastId = Number.MIN_SAFE_INTEGER;
+      this.lap = this.lap + 1;
     } else {
-      id = this.lastId++;
+      this.lastId = this.lastId + 1;
     }
 
-    this.port.postMessage({lap, lastId: id} as IdMessaging);
+    this.port.postMessage({lap: this.lap, lastId: this.lastId} as IdMessaging);
 
-    return '*'.repeat(lap) + id;
+    return '*'.repeat(this.lap) + this.lastId;
   }
 }
