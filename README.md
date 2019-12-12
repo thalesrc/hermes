@@ -33,8 +33,8 @@ class MessageSenderService extends ChromeMessageClient {
 
 const service = new MessageSenderService();
 
-service.sayHello('John').subscribe(messages => {
-  console.log(todos);
+service.sayHello('John').subscribe(message => {
+  console.log(message);
 });
 
 // 'Hi John'
