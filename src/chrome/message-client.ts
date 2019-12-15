@@ -14,10 +14,11 @@ const RESPONSES_SUBJECT$ = Symbol('Responses Subject');
 export class ChromeMessageClient extends MessageClient {
   private static readonly idHelper = new UniqueMessageIdHelper();
 
-  public [RESPONSES$] = this[RESPONSES_SUBJECT$].asObservable().pipe(share());
-
-  private[PORT]: chrome.runtime.Port;
+  private [PORT]: chrome.runtime.Port;
   private [RESPONSES_SUBJECT$] = new Subject<MessageResponse>();
+
+  // tslint:disable-next-line:member-ordering
+  public [RESPONSES$] = this[RESPONSES_SUBJECT$].asObservable().pipe(share());
 
   constructor(name = DEFAULT_CONNECTION_NAME) {
     super();
