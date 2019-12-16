@@ -32,9 +32,12 @@ export class ChromeMessageHost extends MessageHost {
           });
         }
 
-        message.id = `${message.id}&${ChromeMessageHost.PORT_IDENTIFIER}=${incomingMessagePort.sender.tab.id}`;
+        const newMessage = {
+          ...message,
+          id: `${message.id}&${ChromeMessageHost.PORT_IDENTIFIER}=${incomingMessagePort.sender.tab.id}`,
+        };
 
-        this[REQUESTS$].next(message);
+        this[REQUESTS$].next(newMessage);
       });
     });
 
