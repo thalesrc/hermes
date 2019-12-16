@@ -1,4 +1,4 @@
-import { Subject } from 'rxjs';
+import { Observable } from 'rxjs';
 import { share } from 'rxjs/operators';
 
 import { MessageClient } from '../message-client';
@@ -9,24 +9,35 @@ import { DEFAULT_CONNECTION_NAME } from './default-connection-name';
 import { UniqueMessageIdHelper } from './unique-message-id.helper';
 
 const PORT = Symbol('Port');
-const RESPONSES_SUBJECT$ = Symbol('Responses Subject');
+
+interface Connection {
+  port: chrome.runtime.Port;
+  responses: Observable<MessageResponse>;
+}
 
 export class ChromeMessageClient extends MessageClient {
   private static readonly idHelper = new UniqueMessageIdHelper();
+  private static readonly connections: {[key: string]: Connection} = {};
 
+  public [RESPONSES$]: Observable<MessageResponse>;
   private [PORT]: chrome.runtime.Port;
-  private [RESPONSES_SUBJECT$] = new Subject<MessageResponse>();
-
-  // tslint:disable-next-line:member-ordering
-  public [RESPONSES$] = this[RESPONSES_SUBJECT$].asObservable().pipe(share());
 
   constructor(name = DEFAULT_CONNECTION_NAME) {
     super();
 
-    this[PORT] = chrome.runtime.connect({name});
-    this[PORT].onMessage.addListener((message: MessageResponse) => {
-      this[RESPONSES_SUBJECT$].next(message);
-    });
+    if (!(name in ChromeMessageClient.connections)) {
+      const port = chrome.runtime.connect({name});
+      const responses = new Observable<MessageResponse>(subscriber => {
+        port.onMessage.addListener((message: MessageResponse) => {
+          subscriber.next(message);
+        });
+      }).pipe(share());
+
+      ChromeMessageClient.connections[name] = {port, responses};
+    }
+
+    this[PORT] = ChromeMessageClient.connections[name].port;
+    this[RESPONSES$] = ChromeMessageClient.connections[name].responses;
   }
 
   public [SEND]<T>(message: Message<T>) {
