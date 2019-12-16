@@ -1,1 +1,3 @@
-export type ListenerStorage<T = any> = Map<string, (message: any) => AsyncIterable<T>>;
+import { Observable } from 'rxjs';
+
+export type ListenerStorage<T = any> = Map<string, (message: any) => Observable<T>>;

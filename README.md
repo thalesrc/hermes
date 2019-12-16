@@ -37,23 +37,23 @@ service.sayHello('John').subscribe(message => {
   console.log(message);
 });
 
-// 'Hi John'
-// 'Let me send you some data'
-// {a: 1, b: false, c: 'some string'}
+// 'Hi John, here are some data for you'
+// 'Thales Rocks!!'
 
 ```
 
 ```typescript
 // background-script etc.
 import { ChromeMessageHost, Listen } from '@thalesrc/hermes/chrome';
+import { of } from 'rxjs';
 
 class MessageListenerService extends ChromeMessageHost {
   @Listen('hello')
-  public async *listenHello(name: string) {
-    yield 'Hi ' + name;
-    yield 'Let me send you some data';
-
-    yield await someAsyncFunc();
+  public listenHello(name: string): Observable<string> {
+    return of(
+      'Hi ' + name + ', here is some data for you',
+      'Thales Rocks!!'
+    );
   }
 }
 
