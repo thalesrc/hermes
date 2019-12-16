@@ -34,7 +34,7 @@ export class ChromeMessageHost extends MessageHost {
 
         const newMessage = {
           ...message,
-          id: `${message.id}&${ChromeMessageHost.PORT_IDENTIFIER}=${incomingMessagePort.sender.tab.id}`
+          id: `${message.id}&${ChromeMessageHost.PORT_IDENTIFIER}=${incomingMessagePort.sender.tab.id}`,
         };
 
         this[REQUESTS$].next(newMessage);
