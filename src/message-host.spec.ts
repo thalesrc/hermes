@@ -1,6 +1,7 @@
 // tslint:disable:max-classes-per-file no-empty ban-types
 import 'jest';
 
+import { of } from 'rxjs';
 import { Context, marbles } from 'rxjs-marbles/jest';
 
 import { GET_LISTENERS, MessageHost } from './message-host';
@@ -49,12 +50,12 @@ describe('Message Host', () => {
       d: {path: 'a', id: '4', body: 'foo'} as Message,
     });
 
-    function *aListener(message: string) {
-      yield 'aListener';
+    function aListener(message: string) {
+      return of('aListener');
     }
 
-    function *bListener(message: string) {
-      yield 'bListener';
+    function bListener(message: string) {
+      return of('bListener');
     }
 
     class Foo extends MessageHost {
@@ -76,10 +77,10 @@ describe('Message Host', () => {
     setTimeout(() => {
       expect(foo.response).toHaveBeenCalledTimes(6);
       expect(foo.response).toHaveBeenNthCalledWith(1, {id: '1', body: 'aListener', completed: false});
-      expect(foo.response).toHaveBeenNthCalledWith(2, {id: '2', body: 'bListener', completed: false});
-      expect(foo.response).toHaveBeenNthCalledWith(3, {id: '4', body: 'aListener', completed: false});
-      expect(foo.response).toHaveBeenNthCalledWith(4, {id: '1', completed: true});
-      expect(foo.response).toHaveBeenNthCalledWith(5, {id: '2', completed: true});
+      expect(foo.response).toHaveBeenNthCalledWith(2, {id: '1', completed: true});
+      expect(foo.response).toHaveBeenNthCalledWith(3, {id: '2', body: 'bListener', completed: false});
+      expect(foo.response).toHaveBeenNthCalledWith(4, {id: '2', completed: true});
+      expect(foo.response).toHaveBeenNthCalledWith(5, {id: '4', body: 'aListener', completed: false});
       expect(foo.response).toHaveBeenNthCalledWith(6, {id: '4', completed: true});
       done();
     }, 60);

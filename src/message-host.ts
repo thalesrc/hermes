@@ -1,6 +1,7 @@
+import { noop } from '@thalesrc/js-utils';
 import { mapMerge } from '@thalesrc/js-utils/map-merge';
-import { Observable } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { Observable, Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 
 import { ListenerStorage } from './listener-storage.type';
 import { MessageResponse } from './message-response.type';
@@ -16,6 +17,12 @@ export const GET_LISTENERS: unique symbol = Symbol('Message Host Listeners');
  * Message Host
  */
 export abstract class MessageHost {
+  /**
+   * Message Terminator Subject
+   *
+   * Use `next(messageId)` method to terminate a message connection
+   */
+  protected readonly terminateMessage$ = new Subject<string>();
 
   /**
    * Run this method to start listening the requests
@@ -24,13 +31,15 @@ export abstract class MessageHost {
     for (const [path, listener] of this[GET_LISTENERS]()) {
       messages$
         .pipe(filter(({path: messagePath}) => path === messagePath))
-        .subscribe(async ({body, id}) => {
+        .subscribe(({body, id}) => {
 
-          for await (const result of listener.call(this, body)) {
+          (listener.call(this, body) as Observable<any>).pipe(
+            takeUntil(this.terminateMessage$.pipe(filter(terminatedMessageId => terminatedMessageId === id))),
+          ).subscribe(result => {
             this.response({completed: false, id, body: result});
-          }
-
-          this.response({completed: true, id });
+          }, noop, () => {
+            this.response({completed: true, id });
+          });
         });
     }
   }

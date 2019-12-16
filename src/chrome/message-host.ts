@@ -23,7 +23,15 @@ export class ChromeMessageHost extends MessageHost {
       }
 
       port.onMessage.addListener((message: Message, incomingMessagePort: chrome.runtime.Port) => {
-        this[PORTS][incomingMessagePort.sender.tab.id] = incomingMessagePort;
+        if (!this[PORTS][incomingMessagePort.sender.tab.id]) {
+          this[PORTS][incomingMessagePort.sender.tab.id] = incomingMessagePort;
+
+          incomingMessagePort.onDisconnect.addListener(disconnectedPort => {
+            delete this[PORTS][disconnectedPort.sender.tab.id];
+            this.terminateMessage$.next(message.id);
+          });
+        }
+
         message.id = `${message.id}&${ChromeMessageHost.PORT_IDENTIFIER}=${incomingMessagePort.sender.tab.id}`;
 
         this[REQUESTS$].next(message);
@@ -37,6 +45,9 @@ export class ChromeMessageHost extends MessageHost {
     const [messageId, portId] = message.id.split(`&${ChromeMessageHost.PORT_IDENTIFIER}=`);
 
     message.id = messageId;
-    this[PORTS][portId].postMessage(message);
+
+    if (this[PORTS][portId]) {
+      this[PORTS][portId].postMessage(message);
+    }
   }
 }
