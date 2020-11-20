@@ -38,7 +38,7 @@
     "rxjs": "^6.3.3"
   },
   "devDependencies": {
-    "@types/chrome": "0.0.77",
+    "@types/chrome": "^0.0.126",
     "@types/jest": "^24.0.23",
     "cpy-cli": "^2.0.0",
     "jest": "^24.9.0",

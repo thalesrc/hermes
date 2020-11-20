@@ -19,7 +19,7 @@ describe('Chrome / Unique Message Id Helper', () => {
       postMessage: jest.fn(),
     };
 
-    global['chrome'] = {
+    global['chrome' + ''] = {
       runtime: {
         connect: jest.fn().mockReturnValue(port),
       },
