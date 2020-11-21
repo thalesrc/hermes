@@ -26,76 +26,97 @@ describe('Chrome / Unique Message Id Helper', () => {
     };
   });
 
-  it('should initialize properly', () => {
+  it('should initialize properly', done => {
     const helper = new UniqueMessageIdHelper();
 
     expect(helper).toBeTruthy();
+
+    helper['port$' + ''].then(() => {
+      done();
+    });
   });
 
-  it('should connect to the runtime port', () => {
+  it('should connect to the runtime port', done => {
     const helper = new UniqueMessageIdHelper();
 
-    expect(global['chrome'].runtime.connect).toBeCalledTimes(1);
-    expect(global['chrome'].runtime.connect).toBeCalledWith({name: UniqueMessageIdHelper['PORT_ID']});
+    helper['port$' + ''].then(() => {
+      expect(global['chrome'].runtime.connect).toBeCalledTimes(1);
+      expect(global['chrome'].runtime.connect).toBeCalledWith({name: UniqueMessageIdHelper['PORT_ID']});
+      done();
+    });
   });
 
-  it('should increase lastId and lap whenever an event fired with bigger numbers', () => {
+  it('should increase lastId and lap whenever an event fired with bigger numbers', done => {
     let listener: (e: {type: string, lastId: number, lap: number}) => void;
     port.onMessage.addListener = jest.fn(l => listener = l);
 
     const helper = new UniqueMessageIdHelper();
+    helper['port$' + ''].then(() => {
 
-    expect(helper['lastId']).toBe(Number.MIN_SAFE_INTEGER);
-    expect(helper['lap']).toBe(0);
+      expect(helper['lastId']).toBe(Number.MIN_SAFE_INTEGER);
+      expect(helper['lap']).toBe(0);
 
-    listener({type: 'newId', lap: 0, lastId: 0});
+      listener({type: 'newId', lap: 0, lastId: 0});
 
-    expect(helper['lastId']).toBe(0);
-    expect(helper['lap']).toBe(0);
+      expect(helper['lastId']).toBe(0);
+      expect(helper['lap']).toBe(0);
 
-    listener({type: 'newId', lap: 0, lastId: -100});
+      listener({type: 'newId', lap: 0, lastId: -100});
 
-    expect(helper['lastId']).toBe(0);
-    expect(helper['lap']).toBe(0);
+      expect(helper['lastId']).toBe(0);
+      expect(helper['lap']).toBe(0);
 
-    listener({type: 'newId', lap: 1, lastId: 100});
+      listener({type: 'newId', lap: 1, lastId: 100});
 
-    expect(helper['lastId']).toBe(100);
-    expect(helper['lap']).toBe(1);
+      expect(helper['lastId']).toBe(100);
+      expect(helper['lap']).toBe(1);
 
-    listener({type: 'newId', lap: 0, lastId: 200});
+      listener({type: 'newId', lap: 0, lastId: 200});
 
-    expect(helper['lastId']).toBe(200);
-    expect(helper['lap']).toBe(1);
+      expect(helper['lastId']).toBe(200);
+      expect(helper['lap']).toBe(1);
+
+      done();
+    });
   });
 
-  it('should get new id and should emit it to the channel', () => {
+  it('should get new id and should emit it to the channel', done => {
     const listeners: Array<(e: {type: string, lastId: number, lap: number}) => void> = [];
     port.onMessage.addListener = jest.fn(l => listeners.push(l));
     port.postMessage = jest.fn();
 
     const foo = new UniqueMessageIdHelper();
-    expect(port.postMessage).toBeCalledWith({type: 'postMeLastIds'});
+    let id;
+    let expectedId;
 
-    let id = foo.getId();
-    let expectedId = Number.MIN_SAFE_INTEGER + 1 + '';
+    foo['port$' + ''].then(() => {
+      expect(port.postMessage).toBeCalledWith({type: 'postMeLastIds'});
 
-    expect(id).toBe(expectedId);
-    expect(foo['lastId']).toBe(Number.MIN_SAFE_INTEGER + 1);
+      id = foo.getId();
+      expectedId = Number.MIN_SAFE_INTEGER + 1 + '';
+
+      expect(id).toBe(expectedId);
+      expect(foo['lastId']).toBe(Number.MIN_SAFE_INTEGER + 1);
+    });
 
     const bar = new UniqueMessageIdHelper();
-    expect(port.postMessage).toBeCalledWith({type: 'postMeLastIds'});
 
-    listeners[1]({type: 'newId', lastId: Number.MIN_SAFE_INTEGER + 1, lap: 0});
-    expect(bar['lastId']).toBe(Number.MIN_SAFE_INTEGER + 1);
+    Promise.all([foo['port$' + ''], bar['port$' + '']]).then(() => {
+      expect(port.postMessage).toBeCalledWith({type: 'postMeLastIds'});
 
-    id = bar.getId();
-    expectedId = Number.MIN_SAFE_INTEGER + 2 + '';
-    expect(id).toBe(expectedId);
+      listeners[1]({type: 'newId', lastId: Number.MIN_SAFE_INTEGER + 1, lap: 0});
+      expect(bar['lastId']).toBe(Number.MIN_SAFE_INTEGER + 1);
 
-    listeners[0]({type: 'newId', lastId: Number.MIN_SAFE_INTEGER + 2, lap: 0});
-    expect(foo['lastId']).toBe(Number.MIN_SAFE_INTEGER + 2);
-    expect(bar['lastId']).toBe(Number.MIN_SAFE_INTEGER + 2);
+      id = bar.getId();
+      expectedId = Number.MIN_SAFE_INTEGER + 2 + '';
+      expect(id).toBe(expectedId);
+
+      listeners[0]({type: 'newId', lastId: Number.MIN_SAFE_INTEGER + 2, lap: 0});
+      expect(foo['lastId']).toBe(Number.MIN_SAFE_INTEGER + 2);
+      expect(bar['lastId']).toBe(Number.MIN_SAFE_INTEGER + 2);
+
+      done();
+    });
   });
 
   it('should increase lap whenever lastId reach max safe integer', () => {
