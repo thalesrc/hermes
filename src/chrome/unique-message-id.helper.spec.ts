@@ -4,124 +4,101 @@ import 'jest';
 import { UniqueMessageIdHelper } from './unique-message-id.helper';
 
 describe('Chrome / Unique Message Id Helper', () => {
-  let port: {
-    onMessage: {
-      addListener: jest.Mock,
-    },
-    postMessage: jest.Mock,
-  };
+  let onMessageCallback: (message: any) => any;
 
   beforeEach(() => {
-    port = {
-      onMessage: {
-        addListener: jest.fn(),
-      },
-      postMessage: jest.fn(),
-    };
-
     global['chrome' + ''] = {
       runtime: {
-        connect: jest.fn().mockReturnValue(port),
+        onMessage: {
+          addListener: jest.fn().mockImplementation(func => onMessageCallback = func),
+        },
+        sendMessage: jest.fn(),
       },
     };
   });
 
-  it('should initialize properly', done => {
+  it('should initialize properly', () => {
     const helper = new UniqueMessageIdHelper();
 
     expect(helper).toBeTruthy();
-
-    helper['port$' + ''].then(() => {
-      done();
-    });
   });
 
-  it('should connect to the runtime port', done => {
+  it('should connect to the runtime port', () => {
     const helper = new UniqueMessageIdHelper();
 
-    helper['port$' + ''].then(() => {
-      expect(global['chrome'].runtime.connect).toBeCalledTimes(1);
-      expect(global['chrome'].runtime.connect).toBeCalledWith({name: UniqueMessageIdHelper['PORT_ID']});
-      done();
-    });
+    expect(global['chrome'].runtime.onMessage.addListener).toBeCalledTimes(1);
+    expect(global['chrome'].runtime.sendMessage).toBeCalledTimes(1);
+    expect(global['chrome'].runtime.sendMessage)
+      .toBeCalledWith({type: 'postMeLastIds', to: '__hermes_unique_message_id_port__'});
   });
 
-  it('should increase lastId and lap whenever an event fired with bigger numbers', done => {
-    let listener: (e: {type: string, lastId: number, lap: number}) => void;
-    port.onMessage.addListener = jest.fn(l => listener = l);
-
+  it('shouldn\'t listen other types of messages', () => {
     const helper = new UniqueMessageIdHelper();
-    helper['port$' + ''].then(() => {
 
-      expect(helper['lastId']).toBe(Number.MIN_SAFE_INTEGER);
-      expect(helper['lap']).toBe(0);
+    helper['updateLastId' + ''] = jest.fn();
 
-      listener({type: 'newId', lap: 0, lastId: 0});
+    onMessageCallback(null);
+    onMessageCallback('foo');
+    onMessageCallback(1);
+    onMessageCallback({to: 'some-other-message'});
 
-      expect(helper['lastId']).toBe(0);
-      expect(helper['lap']).toBe(0);
-
-      listener({type: 'newId', lap: 0, lastId: -100});
-
-      expect(helper['lastId']).toBe(0);
-      expect(helper['lap']).toBe(0);
-
-      listener({type: 'newId', lap: 1, lastId: 100});
-
-      expect(helper['lastId']).toBe(100);
-      expect(helper['lap']).toBe(1);
-
-      listener({type: 'newId', lap: 0, lastId: 200});
-
-      expect(helper['lastId']).toBe(200);
-      expect(helper['lap']).toBe(1);
-
-      done();
-    });
+    expect(global['chrome'].runtime.sendMessage).toBeCalledTimes(1);
+    expect(helper['updateLastId' + '']).toBeCalledTimes(0);
   });
 
-  it('should get new id and should emit it to the channel', done => {
-    const listeners: Array<(e: {type: string, lastId: number, lap: number}) => void> = [];
-    port.onMessage.addListener = jest.fn(l => listeners.push(l));
-    port.postMessage = jest.fn();
+  it('should increase lastId and lap whenever an event fired with bigger numbers', () => {
+    const helper = new UniqueMessageIdHelper();
 
+    expect(helper['lastId']).toBe(Number.MIN_SAFE_INTEGER);
+    expect(helper['lap']).toBe(0);
+
+    onMessageCallback({type: 'newId', lap: 0, lastId: 0, to: '__hermes_unique_message_id_port__'});
+
+    expect(helper['lastId']).toBe(0);
+    expect(helper['lap']).toBe(0);
+
+    onMessageCallback({type: 'newId', lap: 0, lastId: -100, to: '__hermes_unique_message_id_port__'});
+
+    expect(helper['lastId']).toBe(0);
+    expect(helper['lap']).toBe(0);
+
+    onMessageCallback({type: 'newId', lap: 1, lastId: 100, to: '__hermes_unique_message_id_port__'});
+
+    expect(helper['lastId']).toBe(100);
+    expect(helper['lap']).toBe(1);
+
+    onMessageCallback({type: 'newId', lap: 0, lastId: 200, to: '__hermes_unique_message_id_port__'});
+
+    expect(helper['lastId']).toBe(200);
+    expect(helper['lap']).toBe(1);
+  });
+
+  it('should get new id and should emit it to the channel', () => {
     const foo = new UniqueMessageIdHelper();
-    let id;
-    let expectedId;
+    expect(global['chrome'].runtime.sendMessage).toBeCalledWith({type: 'postMeLastIds', to: '__hermes_unique_message_id_port__'});
 
-    foo['port$' + ''].then(() => {
-      expect(port.postMessage).toBeCalledWith({type: 'postMeLastIds'});
+    let id = foo.getId();
+    let expectedId = Number.MIN_SAFE_INTEGER + 1 + '';
 
-      id = foo.getId();
-      expectedId = Number.MIN_SAFE_INTEGER + 1 + '';
+    expect(id).toBe(expectedId);
+    expect(foo['lastId']).toBe(Number.MIN_SAFE_INTEGER + 1);
+    expect(global['chrome'].runtime.sendMessage).toBeCalledWith({lap: 0, lastId: Number.MIN_SAFE_INTEGER + 1, type: 'newId', to: '__hermes_unique_message_id_port__'});
 
-      expect(id).toBe(expectedId);
-      expect(foo['lastId']).toBe(Number.MIN_SAFE_INTEGER + 1);
-    });
-
+    const fooListener = onMessageCallback;
     const bar = new UniqueMessageIdHelper();
+    const barListener = onMessageCallback;
+    expect(global['chrome'].runtime.sendMessage).toBeCalledWith({type: 'postMeLastIds', to: '__hermes_unique_message_id_port__'});
 
-    Promise.all([foo['port$' + ''], bar['port$' + '']]).then(() => {
-      expect(port.postMessage).toBeCalledWith({type: 'postMeLastIds'});
+    barListener({type: 'newId', lastId: Number.MIN_SAFE_INTEGER + 1, lap: 0, to: '__hermes_unique_message_id_port__'});
+    expect(bar['lastId']).toBe(Number.MIN_SAFE_INTEGER + 1);
 
-      listeners[1]({type: 'newId', lastId: Number.MIN_SAFE_INTEGER + 1, lap: 0});
-      expect(bar['lastId']).toBe(Number.MIN_SAFE_INTEGER + 1);
-
-      id = bar.getId();
-      expectedId = Number.MIN_SAFE_INTEGER + 2 + '';
-      expect(id).toBe(expectedId);
-
-      listeners[0]({type: 'newId', lastId: Number.MIN_SAFE_INTEGER + 2, lap: 0});
-      expect(foo['lastId']).toBe(Number.MIN_SAFE_INTEGER + 2);
-      expect(bar['lastId']).toBe(Number.MIN_SAFE_INTEGER + 2);
-
-      done();
-    });
+    id = bar.getId();
+    expectedId = Number.MIN_SAFE_INTEGER + 2 + '';
+    expect(id).toBe(expectedId);
+    expect(global['chrome'].runtime.sendMessage).toBeCalledWith({lap: 0, lastId: Number.MIN_SAFE_INTEGER + 2, type: 'newId', to: '__hermes_unique_message_id_port__'});
   });
 
   it('should increase lap whenever lastId reach max safe integer', () => {
-    port.onMessage.addListener = jest.fn();
-
     const foo = new UniqueMessageIdHelper();
 
     foo['lastId'] = Number.MAX_SAFE_INTEGER;

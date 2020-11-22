@@ -1,4 +1,3 @@
-import { defer } from '@thalesrc/js-utils';
 import { Subject } from 'rxjs';
 
 import { MessageHost } from '../message-host';
@@ -18,33 +17,31 @@ export class ChromeMessageHost extends MessageHost {
   constructor(name = DEFAULT_CONNECTION_NAME) {
     super();
 
-    defer().then(() => {
-      chrome.runtime.onConnect.addListener((port) => {
-        if (port.name !== name) {
-          return;
+    chrome.runtime.onConnect.addListener((port) => {
+      if (port.name !== name) {
+        return;
+      }
+
+      port.onMessage.addListener((message: Message, incomingMessagePort: chrome.runtime.Port) => {
+        if (!this[PORTS][incomingMessagePort.sender.tab.id]) {
+          this[PORTS][incomingMessagePort.sender.tab.id] = incomingMessagePort;
+
+          incomingMessagePort.onDisconnect.addListener(disconnectedPort => {
+            delete this[PORTS][disconnectedPort.sender.tab.id];
+            this.terminateMessage$.next(message.id);
+          });
         }
 
-        port.onMessage.addListener((message: Message, incomingMessagePort: chrome.runtime.Port) => {
-          if (!this[PORTS][incomingMessagePort.sender.tab.id]) {
-            this[PORTS][incomingMessagePort.sender.tab.id] = incomingMessagePort;
+        const newMessage = {
+          ...message,
+          id: `${message.id}&${ChromeMessageHost.PORT_IDENTIFIER}=${incomingMessagePort.sender.tab.id}`,
+        };
 
-            incomingMessagePort.onDisconnect.addListener(disconnectedPort => {
-              delete this[PORTS][disconnectedPort.sender.tab.id];
-              this.terminateMessage$.next(message.id);
-            });
-          }
-
-          const newMessage = {
-            ...message,
-            id: `${message.id}&${ChromeMessageHost.PORT_IDENTIFIER}=${incomingMessagePort.sender.tab.id}`,
-          };
-
-          this[REQUESTS$].next(newMessage);
-        });
+        this[REQUESTS$].next(newMessage);
       });
-
-      this.listen(this[REQUESTS$]);
     });
+
+    this.listen(this[REQUESTS$]);
   }
 
   protected response(message: MessageResponse): void {
