@@ -16,6 +16,53 @@ The main concept is sending messages via `MessageClient`'s and answering them vi
 
 ------------------------------------------------------------------
 
+### Iframe
+
+Send and recieve messages accross iframes and parent windows
+
+```typescript
+// inside iframe
+import { IframeMessageClient, Request } from '@thalesrc/hermes/iframe';
+
+class MessageSenderService extends IframeMessageClient {
+  @Request('hello')
+  public sayHello(name: string): Observable<string> {
+    return null;
+  }
+}
+
+const service = new MessageSenderService();
+
+service.sayHello('John').subscribe(message => {
+  console.log(message);
+});
+
+// 'Hi John, here are some data for you'
+// 'Thales Rocks!!'
+
+```
+
+```typescript
+// inside parent window
+import { IframeMessageHost, Listen } from '@thalesrc/hermes/chrome';
+import { of } from 'rxjs';
+
+class MessageListenerService extends IframeMessageHost {
+  @Listen('hello')
+  public listenHello(name: string): Observable<string> {
+    return of(
+      'Hi ' + name + ', here is some data for you',
+      'Thales Rocks!!'
+    );
+  }
+}
+
+const listener = new MessageListener();
+
+```
+
+------------------------------------------------------------------
+
 ### Chrome Extensions
 
 Send and recieve messages accross tabs, background-scripts, content-scripts etc.
