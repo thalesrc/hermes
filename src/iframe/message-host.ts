@@ -9,6 +9,7 @@ import { SOURCE_ID_SPLITTER } from './source-id-splitter';
 
 const REQUESTS$ = Symbol('Requests');
 const SOURCES = Symbol('Sources');
+const HANDLER = Symbol('Handler');
 
 interface MessageEvent<T> {
   data: T;
@@ -22,27 +23,13 @@ export class IframeMessageHost extends MessageHost {
   constructor(private channelName = DEFAULT_CHANNEL_NAME) {
     super();
 
-    window.addEventListener('message', ({data, source}: MessageEvent<Message>) => {
-      if (!data || typeof data !== 'object' || !data.path || typeof data.id === 'undefined') {
-        return;
-      }
-
-      const [channel, path] = data.path.split(CHANNEL_PATH_SPLITTER);
-
-      if (channel !== this.channelName) {
-        return;
-      }
-
-      if (!this[SOURCES].some(([, s]) => s === source)) {
-        this[SOURCES].push([uniqueId('hermes-iframe-source') as string, source]);
-      }
-
-      const [sourceId] = this[SOURCES].find(([, s]) => s === source);
-
-      this[REQUESTS$].next({body: data.body, id: `${sourceId}${SOURCE_ID_SPLITTER}${data.id}`, path});
-    });
+    window.addEventListener('message', this[HANDLER]);
 
     this.listen(this[REQUESTS$]);
+  }
+
+  public terminate(): void {
+    window.removeEventListener('message', this[HANDLER]);
   }
 
   protected response(message: MessageResponse): void {
@@ -55,5 +42,25 @@ export class IframeMessageHost extends MessageHost {
     };
 
     (source as any).postMessage(message);
+  }
+
+  private [HANDLER] = ({data, source}: MessageEvent<Message>) => {
+    if (!data || typeof data !== 'object' || !data.path || typeof data.id === 'undefined') {
+      return;
+    }
+
+    const [channel, path] = data.path.split(CHANNEL_PATH_SPLITTER);
+
+    if (channel !== this.channelName) {
+      return;
+    }
+
+    if (!this[SOURCES].some(([, s]) => s === source)) {
+      this[SOURCES].push([uniqueId('hermes-iframe-source') as string, source]);
+    }
+
+    const [sourceId] = this[SOURCES].find(([, s]) => s === source);
+
+    this[REQUESTS$].next({body: data.body, id: `${sourceId}${SOURCE_ID_SPLITTER}${data.id}`, path});
   }
 }
