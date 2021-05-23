@@ -44,14 +44,14 @@ service.sayHello('John').subscribe(message => {
 
 ```typescript
 // inside parent window
-import { IframeMessageHost, Listen } from '@thalesrc/hermes/chrome';
+import { IframeMessageHost, Listen, UpcomingMessage } from '@thalesrc/hermes/iframe';
 import { of } from 'rxjs';
 
 class MessageListenerService extends IframeMessageHost {
   @Listen('hello')
-  public listenHello(name: string): Observable<string> {
+  public listenHello({data, sender}: UpcomingMessage): Observable<string> {
     return of(
-      'Hi ' + name + ', here is some data for you',
+      'Hi ' + data + ', here is some data for you',
       'Thales Rocks!!'
     );
   }

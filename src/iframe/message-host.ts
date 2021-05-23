@@ -61,6 +61,10 @@ export class IframeMessageHost extends MessageHost {
 
     const [sourceId] = this[SOURCES].find(([, s]) => s === source);
 
-    this[REQUESTS$].next({body: data.body, id: `${sourceId}${SOURCE_ID_SPLITTER}${data.id}`, path});
+    this[REQUESTS$].next({
+      body: {data: data.body, sender: source},
+      id: `${sourceId}${SOURCE_ID_SPLITTER}${data.id}`,
+      path,
+    });
   }
 }
