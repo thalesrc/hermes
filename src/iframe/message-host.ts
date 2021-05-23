@@ -1,4 +1,4 @@
-import { uniqueId } from '@thalesrc/js-utils';
+import { functionOf, uniqueId } from '@thalesrc/js-utils';
 import { Subject } from 'rxjs';
 import { MessageHost } from '../message-host';
 import { MessageResponse } from '../message-response.type';
@@ -20,7 +20,10 @@ export class IframeMessageHost extends MessageHost {
   private [REQUESTS$] = new Subject<Message>();
   private [SOURCES]: Array<[string, MessageEventSource]> = [];
 
-  constructor(private channelName = DEFAULT_CHANNEL_NAME) {
+  constructor(
+    private channelName = DEFAULT_CHANNEL_NAME,
+    private targetFrameGetter: () => HTMLIFrameElement = functionOf(null),
+  ) {
     super();
 
     window.addEventListener('message', this[HANDLER]);
@@ -46,6 +49,12 @@ export class IframeMessageHost extends MessageHost {
 
   private [HANDLER] = ({data, source}: MessageEvent<Message>) => {
     if (!data || typeof data !== 'object' || !data.path || typeof data.id === 'undefined') {
+      return;
+    }
+
+    const targetFrame = this.targetFrameGetter();
+
+    if (targetFrame && targetFrame.contentWindow !== source) {
       return;
     }
 
