@@ -3,6 +3,10 @@ import { MessageHost } from "../message-host";
 import { MessageResponse } from "../message-response.type";
 import { Message } from "../message.interface";
 
+interface MessageEvent<T> {
+  data: T;
+}
+
 const REQUESTS$ = Symbol('Requests');
 const HANDLER = Symbol('Handler');
 const WORKER = Symbol('Worker');

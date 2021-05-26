@@ -5,6 +5,10 @@ import { MessageResponse } from "../message-response.type";
 import { Message } from "../message.interface";
 import { GET_NEW_ID, RESPONSES$, SEND } from "../selectors";
 
+interface MessageEvent<T> {
+  data: T;
+}
+
 const WORKER = Symbol('Worker');
 const HANDLER = Symbol('Handler');
 
