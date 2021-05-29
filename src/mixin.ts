@@ -1,7 +1,11 @@
+import { difference } from "@thalesrc/js-utils";
+
 type Constructor<T extends {}, U extends any[] = any[]> = new (...args: U) => T;
 
 type ConstructorProps<T> = T extends {new (...args: infer U): any;} ? U : never;
 type Instance<T> = T extends {new (...args: any[]): infer U;} ? U : never;
+
+const PROPS_TO_FILTER = ['constructor'];
 
 export function Mixin<T extends Constructor<any>, U extends Constructor<any>>(
   First: T,
@@ -21,7 +25,7 @@ export function Mixin<T extends Constructor<any>, U extends Constructor<any>>(
     }
   }
 
-  for (const prop in Second.prototype) {
+  for (const prop in difference(Reflect.ownKeys(Second.prototype), PROPS_TO_FILTER)) {
     Result.prototype[prop] = Second.prototype[prop];
   }
 
