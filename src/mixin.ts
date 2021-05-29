@@ -21,7 +21,9 @@ export function Mixin<T extends Constructor<any>, U extends Constructor<any>>(
     }
   }
 
-  Result.prototype = {...First.prototype, ...Second.prototype};
+  for (const prop in Second.prototype) {
+    Result.prototype[prop] = Second.prototype[prop];
+  }
 
   return Result;
 }
