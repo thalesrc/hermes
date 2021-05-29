@@ -19,13 +19,13 @@ export function Mixin<T extends Constructor<any>, U extends Constructor<any>>(
 
       const secondInstance = new Second(...secondArgs);
 
-      for (const key in secondArgs) {
-        this[key] = secondInstance[key];
+      for (const key of Reflect.ownKeys(secondInstance)) {
+        this[key as string] = secondInstance[key];
       }
     }
   }
 
-  for (const prop in difference(Reflect.ownKeys(Second.prototype), PROPS_TO_FILTER)) {
+  for (const prop of difference(Reflect.ownKeys(Second.prototype), PROPS_TO_FILTER)) {
     Result.prototype[prop] = Second.prototype[prop];
   }
 
