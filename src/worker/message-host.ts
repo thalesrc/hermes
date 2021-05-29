@@ -36,6 +36,14 @@ export class WorkerMessageHost extends MessageHost {
     }
   }
 
+  public terminate() {
+    if (this[WORKER]) {
+      this[WORKER].removeEventListener('message', this[HANDLER]);
+    } else {
+      removeEventListener('message', this[HANDLER]);
+    }
+  }
+
   private [HANDLER](event: MessageEvent<Message>) {
     this[REQUESTS$].next(event.data);
   }
