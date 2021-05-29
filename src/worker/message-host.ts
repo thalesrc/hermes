@@ -44,7 +44,7 @@ export class WorkerMessageHost extends MessageHost {
     }
   }
 
-  private [HANDLER](event: MessageEvent<Message>) {
+  private [HANDLER] = (event: MessageEvent<Message>) => {
     this[REQUESTS$].next(event.data);
   }
 }

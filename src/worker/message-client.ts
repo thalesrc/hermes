@@ -36,7 +36,7 @@ export class WorkerMessageClient extends MessageClient {
     }
   }
 
-  protected [HANDLER](event: MessageEvent<MessageResponse>) {
+  protected [HANDLER] = (event: MessageEvent<MessageResponse>) => {
     this[RESPONSES$].next(event.data);
   }
 
