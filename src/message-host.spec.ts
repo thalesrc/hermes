@@ -27,19 +27,19 @@ describe('Message Host', () => {
 
   it('should collect all listeners', () => {
     class Foo extends MessageHost {
-      public static [MESSAGE_LISTENERS] = new Map([['a', 'a']]);
+      public static [MESSAGE_LISTENERS] = new Map([['a', ['a']]]);
 
       public response() {}
     }
 
     class Bar extends Foo {
-      public static [MESSAGE_LISTENERS] = new Map([['b', 'b']]);
+      public static [MESSAGE_LISTENERS] = new Map([['b', ['b']]]);
     }
 
     const bar = new Bar();
     const listeners = [...bar[GET_LISTENERS]().entries()];
 
-    expect(listeners).toEqual([['b', 'b'], ['a', 'a']]);
+    expect(listeners).toEqual([['b', ['b']], ['a', ['a']]]);
   });
 
   it('should start listening after listen method called', asyncMarbles((m, done) => {
@@ -59,7 +59,7 @@ describe('Message Host', () => {
     }
 
     class Foo extends MessageHost {
-      public static [MESSAGE_LISTENERS] = new Map([['a', aListener], ['b', bListener]]);
+      public static [MESSAGE_LISTENERS] = new Map([['a', [aListener]], ['b', [bListener]]]);
 
       public response = jest.fn();
 
