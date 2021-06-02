@@ -12,6 +12,9 @@ export function Listen(path?: string): MethodDecorator {
       target.constructor[MESSAGE_LISTENERS] = new Map();
     }
 
-    (target.constructor[MESSAGE_LISTENERS] as ListenerStorage).set(path || key, descriptor.value as any);
+    (target.constructor[MESSAGE_LISTENERS] as ListenerStorage).set(path || key, [
+      ...(target.constructor[MESSAGE_LISTENERS].get(path || key) || []),
+      descriptor.value
+    ] as any);
   };
 }

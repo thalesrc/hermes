@@ -1,5 +1,4 @@
 import { noop } from '@thalesrc/js-utils';
-import { mapMerge } from '@thalesrc/js-utils/map-merge';
 import { Observable, Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 
@@ -28,18 +27,19 @@ export abstract class MessageHost {
    * Run this method to start listening the requests
    */
   protected readonly listen = (messages$: Observable<Message>): void => {
-    for (const [path, listener] of this[GET_LISTENERS]()) {
+    for (const [path, listeners] of this[GET_LISTENERS]()) {
       messages$
         .pipe(filter(({path: messagePath}) => path === messagePath))
         .subscribe(({body, id}) => {
-
-          (listener.call(this, body) as Observable<any>).pipe(
-            takeUntil(this.terminateMessage$.pipe(filter(terminatedMessageId => terminatedMessageId === id))),
-          ).subscribe(result => {
-            this.response({completed: false, id, body: result});
-          }, noop, () => {
-            this.response({completed: true, id });
-          });
+          for (const listener of listeners) {
+            (listener.call(this, body) as Observable<any>).pipe(
+              takeUntil(this.terminateMessage$.pipe(filter(terminatedMessageId => terminatedMessageId === id))),
+            ).subscribe(result => {
+              this.response({completed: false, id, body: result});
+            }, noop, () => {
+              this.response({completed: true, id });
+            });
+          }
         });
     }
   }
@@ -55,13 +55,15 @@ export abstract class MessageHost {
    * All inherited listeners
    */
   private [GET_LISTENERS](): ListenerStorage {
-    let map: ListenerStorage = new Map();
+    const map: ListenerStorage = new Map();
 
     let currentProto = this['__proto__' + ''];
 
     while (currentProto.constructor !== Object) {
       if (currentProto.constructor[MESSAGE_LISTENERS]) {
-        map = mapMerge(map, currentProto.constructor[MESSAGE_LISTENERS] as ListenerStorage);
+        for (const [key, handlers] of currentProto.constructor[MESSAGE_LISTENERS] as ListenerStorage) {
+          map.set(key, [...(map.get(key) || []), ...handlers]);
+        }
       }
 
       currentProto = currentProto.__proto__;
