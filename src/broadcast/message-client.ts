@@ -33,7 +33,7 @@ export class BroadcastMessageClient extends MessageClient {
 
   protected [GET_NEW_ID](): string {
     const key = 'Hermes/Broadcast/' + this.channelName;
-    const lastId = +(localStorage.getItem(key) ?? '0');
+    const lastId = +(localStorage.getItem(key) || '0');
     const newId = (lastId + 1) + '';
 
     localStorage.setItem(key, newId);

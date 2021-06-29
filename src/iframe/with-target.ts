@@ -8,8 +8,8 @@ export class WithTarget {
 
   protected get [TARGET_FRAME](): null | HTMLIFrameElement {
     return typeof this[_TARGET_FRAME] === 'function'
-      ? (this[_TARGET_FRAME] as () => HTMLIFrameElement)() ?? null
-      : this[_TARGET_FRAME] as HTMLIFrameElement ?? null;
+      ? (this[_TARGET_FRAME] as () => HTMLIFrameElement)() || null
+      : this[_TARGET_FRAME] as HTMLIFrameElement || null;
   }
 
   constructor(targetFrame?: IFrame) {
