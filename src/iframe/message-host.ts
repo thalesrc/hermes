@@ -6,29 +6,37 @@ import { Message } from '../message.interface';
 import { CHANNEL_PATH_SPLITTER } from './channel-path-splitter';
 import { DEFAULT_CHANNEL_NAME } from './default-channel-name';
 import { SOURCE_ID_SPLITTER } from './source-id-splitter';
-import { Mixin } from '../mixin';
-import { WithTarget, TARGET_FRAME } from './with-target';
 import { IFrame } from './iframe.type';
 
 const REQUESTS$ = Symbol('Requests');
 const SOURCES = Symbol('Sources');
 const HANDLER = Symbol('Handler');
+const TARGET_FRAME = Symbol('Target Frame');
+const _TARGET_FRAME = Symbol('_ Target Frame');
 
 interface MessageEvent<T> {
   data: T;
   source: MessageEventSource;
 }
 
-// @ts-ignore
-export class IframeMessageHost extends Mixin(MessageHost, WithTarget) {
+export class IframeMessageHost extends MessageHost {
   private [REQUESTS$] = new Subject<Message>();
   private [SOURCES]: Array<[string, MessageEventSource]> = [];
+  private [_TARGET_FRAME]: IFrame;
+
+  protected get [TARGET_FRAME](): null | HTMLIFrameElement {
+    return typeof this[_TARGET_FRAME] === 'function'
+      ? (this[_TARGET_FRAME] as () => HTMLIFrameElement)() || null
+      : this[_TARGET_FRAME] as HTMLIFrameElement || null;
+  }
 
   constructor(
     private channelName = DEFAULT_CHANNEL_NAME,
     targetFrame?: IFrame
   ) {
-    super([], [targetFrame]);
+    super();
+
+    this[_TARGET_FRAME] = targetFrame;
 
     window.addEventListener('message', this[HANDLER]);
 

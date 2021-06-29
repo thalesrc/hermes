@@ -6,23 +6,32 @@ import { Message } from '../message.interface';
 import { GET_NEW_ID, RESPONSES$, SEND } from '../selectors';
 import { CHANNEL_PATH_SPLITTER } from './channel-path-splitter';
 import { DEFAULT_CHANNEL_NAME } from './default-channel-name';
-import { Mixin } from '../mixin';
-import { WithTarget, TARGET_FRAME } from './with-target';
 import { IFrame } from './iframe.type';
 
 interface HermesMessageEvent<T> extends MessageEvent {
   data: T;
 }
 
-// @ts-ignore
-export class IframeMessageClient extends Mixin(MessageClient, WithTarget) {
+const TARGET_FRAME = Symbol('Target Frame');
+const _TARGET_FRAME = Symbol('_ Target Frame');
+
+export class IframeMessageClient extends MessageClient {
   public [RESPONSES$] = new Subject<MessageResponse>();
+  private [_TARGET_FRAME]: IFrame;
+
+  protected get [TARGET_FRAME](): null | HTMLIFrameElement {
+    return typeof this[_TARGET_FRAME] === 'function'
+      ? (this[_TARGET_FRAME] as () => HTMLIFrameElement)() || null
+      : this[_TARGET_FRAME] as HTMLIFrameElement || null;
+  }
 
   constructor(
     private channelName = DEFAULT_CHANNEL_NAME,
     targetFrame?: IFrame
   ) {
-    super([], [targetFrame]);
+    super();
+
+    this[_TARGET_FRAME] = targetFrame;
 
     window.addEventListener('message', ({data, source}: HermesMessageEvent<MessageResponse>) => {
       const target = this[TARGET_FRAME];
