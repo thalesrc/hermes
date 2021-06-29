@@ -6,18 +6,29 @@ import { Message } from '../message.interface';
 import { GET_NEW_ID, RESPONSES$, SEND } from '../selectors';
 import { CHANNEL_PATH_SPLITTER } from './channel-path-splitter';
 import { DEFAULT_CHANNEL_NAME } from './default-channel-name';
+import { Mixin } from '../mixin';
+import { WithTarget, TARGET_FRAME } from './with-target';
+import { IFrame } from './iframe.type';
 
-interface MessageEvent<T> {
+interface HermesMessageEvent<T> extends MessageEvent {
   data: T;
 }
 
-export class IframeMessageClient extends MessageClient {
+// @ts-ignore
+export class IframeMessageClient extends Mixin(MessageClient, WithTarget) {
   public [RESPONSES$] = new Subject<MessageResponse>();
 
-  constructor(private channelName = DEFAULT_CHANNEL_NAME) {
-    super();
+  constructor(
+    private channelName = DEFAULT_CHANNEL_NAME,
+    targetFrame?: IFrame
+  ) {
+    super([], [targetFrame]);
 
-    window.addEventListener('message', ({data}: MessageEvent<MessageResponse>) => {
+    window.addEventListener('message', ({data, source}: HermesMessageEvent<MessageResponse>) => {
+      const target = this[TARGET_FRAME];
+
+      if (target && source !== target.contentWindow) return;
+
       if (!data
         || typeof data !== 'object'
         || typeof data.id === 'undefined'
@@ -33,7 +44,13 @@ export class IframeMessageClient extends MessageClient {
   public [SEND]<T>(message: Message<T>) {
     message = {...message, path: `${this.channelName}${CHANNEL_PATH_SPLITTER}${message.path}`};
 
-    window.parent.postMessage(message, '*');
+    const target = this[TARGET_FRAME];
+
+    if (target) {
+      target.contentWindow.postMessage(message, '*');
+    } else {
+      window.parent.postMessage(message, '*');
+    }
   }
 
   protected [GET_NEW_ID](): string {

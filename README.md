@@ -108,3 +108,14 @@ const listener = new MessageListener();
 
 ```
 
+------------------------------------------------------------------
+
+### Workers
+
+Implemented but not documented yet
+
+------------------------------------------------------------------
+
+### Broadcast
+
+Implemented but not documented yet

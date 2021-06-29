@@ -1,4 +1,4 @@
-import { functionOf, uniqueId } from '@thalesrc/js-utils';
+import { uniqueId } from '@thalesrc/js-utils';
 import { Subject } from 'rxjs';
 import { MessageHost } from '../message-host';
 import { MessageResponse } from '../message-response.type';
@@ -6,6 +6,9 @@ import { Message } from '../message.interface';
 import { CHANNEL_PATH_SPLITTER } from './channel-path-splitter';
 import { DEFAULT_CHANNEL_NAME } from './default-channel-name';
 import { SOURCE_ID_SPLITTER } from './source-id-splitter';
+import { Mixin } from '../mixin';
+import { WithTarget, TARGET_FRAME } from './with-target';
+import { IFrame } from './iframe.type';
 
 const REQUESTS$ = Symbol('Requests');
 const SOURCES = Symbol('Sources');
@@ -16,15 +19,16 @@ interface MessageEvent<T> {
   source: MessageEventSource;
 }
 
-export class IframeMessageHost extends MessageHost {
+// @ts-ignore
+export class IframeMessageHost extends Mixin(MessageHost, WithTarget) {
   private [REQUESTS$] = new Subject<Message>();
   private [SOURCES]: Array<[string, MessageEventSource]> = [];
 
   constructor(
     private channelName = DEFAULT_CHANNEL_NAME,
-    private targetFrameGetter: () => HTMLIFrameElement = functionOf(null),
+    targetFrame?: IFrame
   ) {
-    super();
+    super([], [targetFrame]);
 
     window.addEventListener('message', this[HANDLER]);
 
@@ -52,7 +56,7 @@ export class IframeMessageHost extends MessageHost {
       return;
     }
 
-    const targetFrame = this.targetFrameGetter();
+    const targetFrame = this[TARGET_FRAME];
 
     if (targetFrame && targetFrame.contentWindow !== source) {
       return;
