@@ -11,10 +11,12 @@ interface MessageEvent<T> {
 
 const WORKER = Symbol('Worker');
 const HANDLER = Symbol('Handler');
+const INSTANCE_ID = Symbol('Instance Id');
 
 export class WorkerMessageClient extends MessageClient {
   public [RESPONSES$] = new Subject<MessageResponse>();
   protected [WORKER]: Worker;
+  private [INSTANCE_ID] = Date.now();
 
   constructor(worker?: Worker) {
     super();
@@ -41,6 +43,6 @@ export class WorkerMessageClient extends MessageClient {
   }
 
   protected [GET_NEW_ID](): string {
-    return uniqueId('hermes-worker-message') as string;
+    return uniqueId('hermes-worker-message-' + this[INSTANCE_ID]) as string;
   }
 }
