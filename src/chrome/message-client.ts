@@ -9,6 +9,7 @@ import { DEFAULT_CONNECTION_NAME } from './default-connection-name';
 import { UniqueMessageIdHelper } from './unique-message-id.helper';
 
 const PORT = Symbol('Port');
+const ID_HELPER = Symbol('Id Helper');
 
 interface Connection {
   port: chrome.runtime.Port;
@@ -16,9 +17,9 @@ interface Connection {
 }
 
 export class ChromeMessageClient extends MessageClient {
-  private static readonly idHelper = new UniqueMessageIdHelper();
   private static readonly connections: {[key: string]: Connection} = {};
 
+  private readonly [ID_HELPER] = new UniqueMessageIdHelper();
   public [RESPONSES$]: Observable<MessageResponse>;
   private [PORT]: chrome.runtime.Port;
 
@@ -45,6 +46,6 @@ export class ChromeMessageClient extends MessageClient {
   }
 
   protected [GET_NEW_ID](): string {
-    return ChromeMessageClient.idHelper.getId();
+    return this[ID_HELPER].getId();
   }
 }
