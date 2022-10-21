@@ -6,10 +6,10 @@ import { MessageResponse } from '../message-response.type';
 import { Message } from '../message.interface';
 import { GET_NEW_ID, RESPONSES$, SEND } from '../selectors';
 import { DEFAULT_CONNECTION_NAME } from './default-connection-name';
-import { UniqueMessageIdHelper } from './unique-message-id.helper';
 
+const RANDOM_ID_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const RANDOM_ID_CHARS_LENGTH = RANDOM_ID_CHARS.length;
 const PORT = Symbol('Port');
-const ID_HELPER = Symbol('Id Helper');
 
 interface Connection {
   port: chrome.runtime.Port;
@@ -17,9 +17,8 @@ interface Connection {
 }
 
 export class ChromeMessageClient extends MessageClient {
-  private static readonly connections: {[key: string]: Connection} = {};
+  private static readonly connections: { [key: string]: Connection } = {};
 
-  private readonly [ID_HELPER] = new UniqueMessageIdHelper();
   public [RESPONSES$]: Observable<MessageResponse>;
   private [PORT]: chrome.runtime.Port;
 
@@ -27,14 +26,14 @@ export class ChromeMessageClient extends MessageClient {
     super();
 
     if (!(name in ChromeMessageClient.connections)) {
-      const port = chrome.runtime.connect({name});
+      const port = chrome.runtime.connect({ name });
       const responses = new Observable<MessageResponse>(subscriber => {
         port.onMessage.addListener((message: MessageResponse) => {
           subscriber.next(message);
         });
       }).pipe(share());
 
-      ChromeMessageClient.connections[name] = {port, responses};
+      ChromeMessageClient.connections[name] = { port, responses };
     }
 
     this[PORT] = ChromeMessageClient.connections[name].port;
@@ -46,6 +45,12 @@ export class ChromeMessageClient extends MessageClient {
   }
 
   protected [GET_NEW_ID](): string {
-    return this[ID_HELPER].getId();
+    let result = '' + Date.now();
+
+    for (var i = 0; i < 10; i++) {
+      result += RANDOM_ID_CHARS.charAt(Math.floor(Math.random() * RANDOM_ID_CHARS_LENGTH));
+    }
+
+    return result;
   }
 }
