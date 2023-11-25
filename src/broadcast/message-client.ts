@@ -9,35 +9,28 @@ interface MessageEvent<T> {
   data: T;
 }
 
-const CHANNEL = Symbol('Broadcast Channel');
-const HANDLER = Symbol('Handler');
-
 export class BroadcastMessageClient extends MessageClient {
-  public [RESPONSES$] = new Subject<MessageResponse>();
+  protected [RESPONSES$] = new Subject<MessageResponse>();
 
-  private [CHANNEL] = new BroadcastChannel(this.channelName);
+  #channel: BroadcastChannel;
 
-  constructor(private channelName = DEFAULT_CHANNEL_NAME) {
+  constructor(channelName = DEFAULT_CHANNEL_NAME) {
     super();
 
-    this[CHANNEL].addEventListener('message', this[HANDLER]);
+    this.#channel = new BroadcastChannel(channelName);
+
+    this.#channel.addEventListener('message', this.#handler);
   }
 
-  public [SEND]<T>(message: Message<T>) {
-    this[CHANNEL].postMessage(message);
+  protected [SEND]<T>(message: Message<T>) {
+    this.#channel.postMessage(message);
   }
 
-  protected [HANDLER] = (event: MessageEvent<MessageResponse>) => {
+  #handler = (event: MessageEvent<MessageResponse>) => {
     this[RESPONSES$].next(event.data);
   }
 
   protected [GET_NEW_ID](): string {
-    const key = 'Hermes/Broadcast/' + this.channelName;
-    const lastId = +(localStorage.getItem(key) || '0');
-    const newId = (lastId + 1) + '';
-
-    localStorage.setItem(key, newId);
-
-    return newId;
+    return crypto.randomUUID();
   }
 }

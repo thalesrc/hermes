@@ -5,6 +5,7 @@
   "main": "index.js",
   "typings": "index.d.ts",
   "scripts": {
+    "build": "tsc -p ./tsconfig.lib.json",
     "test": "jest",
     "test:coverage": "jest --collectCoverage",
     "lint": "tslint -p tsconfig.json && tslint -p tsconfig.spec.json",
