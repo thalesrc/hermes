@@ -6,7 +6,11 @@ module.exports = {
   coverageReporters: ["html", "json"],
   collectCoverageFrom: [
     "src/**/*.ts",
-    "!**/*/index.ts"
+    "!**/*/index.ts",
+    "!src/broadcast/*", // Remove these lines later
+    "!src/chrome/*",
+    "!src/iframe/*",
+    "!src/worker/*",
   ],
   testMatch: [
     "**/__tests__/**/*.+(ts|tsx|js)",
