@@ -1,5 +1,10 @@
 {
   "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": [
+      "@types/chrome"
+    ]
+  },
   "exclude": [
     "node_modules",
     "**/*.spec.ts"

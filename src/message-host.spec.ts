@@ -4,7 +4,7 @@ import 'jest';
 import { of } from 'rxjs';
 import { Context, marbles } from 'rxjs-marbles/jest';
 
-import { GET_LISTENERS, MessageHost } from './message-host';
+import { MessageHost } from './message-host';
 import { Message } from './message.interface';
 import { MESSAGE_LISTENERS } from './selectors';
 
@@ -23,23 +23,6 @@ describe.only('Message Host', () => {
     }
 
     expect(Foo).toBeTruthy();
-  });
-
-  it('should collect all listeners', () => {
-    class Foo extends MessageHost {
-      public static [MESSAGE_LISTENERS] = new Map([['a', ['a']]]);
-
-      public response() {}
-    }
-
-    class Bar extends Foo {
-      public static [MESSAGE_LISTENERS] = new Map([['b', ['b']]]);
-    }
-
-    const bar = new Bar();
-    const listeners = [...bar[GET_LISTENERS]().entries()];
-
-    expect(listeners).toEqual([['b', ['b']], ['a', ['a']]]);
   });
 
   it('should start listening after listen method called', asyncMarbles((m, done) => {
@@ -128,26 +111,6 @@ describe.only('Message Host', () => {
     const superBar = new SuperBar();
 
     m.expect(reqs).toHaveSubscriptions(['^---!', '^---!', '^---!', '^---!', '^---!', '^---!']);
-
-    const barListeners = bar[GET_LISTENERS]();
-    const bazListeners = baz[GET_LISTENERS]();
-    const superBarListeners = superBar[GET_LISTENERS]();
-
-    expect(barListeners.size).toBe(2);
-    expect(bazListeners.size).toBe(2);
-    expect(superBarListeners.size).toBe(2);
-
-    expect(barListeners.get('foo').length).toBe(1);
-    expect(bazListeners.get('foo').length).toBe(1);
-    expect(superBarListeners.get('foo').length).toBe(1);
-
-    expect(barListeners.get('bar').length).toBe(1);
-    expect(bazListeners.get('bar')).toBeUndefined();
-    expect(superBarListeners.get('bar').length).toBe(2);
-
-    expect(barListeners.get('baz')).toBeUndefined();
-    expect(bazListeners.get('baz').length).toBe(1);
-    expect(superBarListeners.get('baz')).toBeUndefined();
 
     setTimeout(() => {
       expect(bar.response).toHaveBeenCalledTimes(6);

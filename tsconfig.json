@@ -13,7 +13,7 @@
 			"dom"
     ],
     "types": [
-      "@types/chrome"
+      "@types/chrome", "jest"
     ]
 	},
 	"include": [
