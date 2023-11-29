@@ -1,7 +1,8 @@
-import { filter, pluck, takeWhile } from 'rxjs/operators';
+import { filter, map, takeWhile } from 'rxjs/operators';
 
 import { MessageClient } from './message-client';
 import { GET_NEW_ID, RESPONSES$, SEND } from './selectors';
+import { ErrorMessageResponse, SuccessfulMessageResponse, UncompletedMessageResponse } from './message-response.type';
 
 export function Request(path: string): MethodDecorator {
   return function(target: object, key: string, descriptor: TypedPropertyDescriptor<any>): TypedPropertyDescriptor<any> {
@@ -11,9 +12,16 @@ export function Request(path: string): MethodDecorator {
       this[SEND]({body: message, id: messageId, path});
 
       return this[RESPONSES$].pipe(
+        map((data) => {
+          const {error} = data as ErrorMessageResponse;
+
+          if (error) throw error;
+
+          return data as SuccessfulMessageResponse;
+        }),
         filter(({id}) => id === messageId),
         takeWhile(({completed}) => !completed),
-        pluck('body'),
+        map(({body}: UncompletedMessageResponse) => body),
       );
     };
 
