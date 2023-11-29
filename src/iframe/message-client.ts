@@ -1,7 +1,7 @@
 import { uniqueId } from '@thalesrc/js-utils';
 import { Subject } from 'rxjs';
 import { MessageClient } from '../message-client';
-import { MessageResponse } from '../message-response.type';
+import { MessageResponse, SuccessfulMessageResponse } from '../message-response.type';
 import { Message } from '../message.interface';
 import { GET_NEW_ID, RESPONSES$, SEND } from '../selectors';
 import { CHANNEL_PATH_SPLITTER } from './channel-path-splitter';
@@ -33,7 +33,7 @@ export class IframeMessageClient extends MessageClient {
 
     this[_TARGET_FRAME] = targetFrame;
 
-    window.addEventListener('message', ({data, source}: HermesMessageEvent<MessageResponse>) => {
+    window.addEventListener('message', ({data, source}: HermesMessageEvent<SuccessfulMessageResponse>) => {
       const target = this[TARGET_FRAME];
 
       if (target && source !== target.contentWindow) return;

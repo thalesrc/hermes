@@ -3,14 +3,10 @@ import { Observable, Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 
 import { ListenerStorage } from './listener-storage.type';
-import { MessageResponse } from './message-response.type';
+import { SuccessfulMessageResponse } from './message-response.type';
 import { Message } from './message.interface';
 import { MESSAGE_LISTENERS } from './selectors';
 
-/**
- * Listeners property symbol
- */
-export const GET_LISTENERS: unique symbol = Symbol('Message Host Listeners');
 
 /**
  * Message Host
@@ -27,7 +23,7 @@ export abstract class MessageHost {
    * Run this method to start listening the requests
    */
   protected readonly listen = (messages$: Observable<Message>): void => {
-    for (const [path, listeners] of this[GET_LISTENERS]()) {
+    for (const [path, listeners] of this.#getListeners()) {
       messages$
         .pipe(filter(({path: messagePath}) => path === messagePath))
         .subscribe(({body, id}) => {
@@ -49,12 +45,12 @@ export abstract class MessageHost {
    *
    * @param message Incoming response message
    */
-  protected abstract response(message: MessageResponse): void;
+  protected abstract response<T = any>(message: SuccessfulMessageResponse<T>): void;
 
   /**
    * All inherited listeners
    */
-  private [GET_LISTENERS](): ListenerStorage {
+  #getListeners(): ListenerStorage {
     const map: ListenerStorage = new Map();
 
     let currentProto = this['__proto__' + ''];

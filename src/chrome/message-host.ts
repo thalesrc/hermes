@@ -1,7 +1,7 @@
 import { Subject } from 'rxjs';
 
 import { MessageHost } from '../message-host';
-import { MessageResponse } from '../message-response.type';
+import { SuccessfulMessageResponse } from '../message-response.type';
 import { Message } from '../message.interface';
 import { DEFAULT_CONNECTION_NAME } from './default-connection-name';
 
@@ -44,7 +44,7 @@ export class ChromeMessageHost extends MessageHost {
     this.listen(this[REQUESTS$]);
   }
 
-  protected response(message: MessageResponse): void {
+  protected response(message: SuccessfulMessageResponse): void {
     const [messageId, portId] = message.id.split(`&${ChromeMessageHost.PORT_IDENTIFIER}=`);
 
     message.id = messageId;

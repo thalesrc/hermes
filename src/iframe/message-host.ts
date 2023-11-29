@@ -1,7 +1,7 @@
 import { uniqueId } from '@thalesrc/js-utils';
 import { Subject } from 'rxjs';
 import { MessageHost } from '../message-host';
-import { MessageResponse } from '../message-response.type';
+import { SuccessfulMessageResponse } from '../message-response.type';
 import { Message } from '../message.interface';
 import { CHANNEL_PATH_SPLITTER } from './channel-path-splitter';
 import { DEFAULT_CHANNEL_NAME } from './default-channel-name';
@@ -47,7 +47,7 @@ export class IframeMessageHost extends MessageHost {
     window.removeEventListener('message', this[HANDLER]);
   }
 
-  protected response(message: MessageResponse): void {
+  protected response(message: SuccessfulMessageResponse): void {
     const [sourceId, messageId] = message.id.split(SOURCE_ID_SPLITTER);
     const [, source] = this[SOURCES].find(([sId]) => sId === sourceId);
 
